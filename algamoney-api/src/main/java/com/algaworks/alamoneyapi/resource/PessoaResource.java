@@ -15,41 +15,40 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import com.algaworks.alamoneyapi.model.Categoria;
-import com.algaworks.alamoneyapi.repository.CategoriaRepository;
+import com.algaworks.alamoneyapi.model.Pessoa;
+import com.algaworks.alamoneyapi.repository.PessoaRepository;
 
 @RestController //Controlador JSON dispensa uso de notaçoes adicionais
-@RequestMapping("/categorias") //faz o mapeamento da requisicao tipo meusite.com/categorias
-public class CategoriaResource {
+@RequestMapping("/pessoa") //faz o mapeamento da requisicao tipo meusite.com/categorias
+public class PessoaResource {
 
 	@Autowired //injeta uma implementacao de "Categoria" da anotacao categoriaRepository nesta classe resource
-	private CategoriaRepository categoriaRepository;
+	private PessoaRepository pessoaRepository;
 	
 	@GetMapping //mapeamento do "get" para a "/categorias"
-	public List<Categoria> listar() {
-		return categoriaRepository.findAll();
+	public List<Pessoa> listar() {
+		return pessoaRepository.findAll();
 	}
 	
 	@PostMapping 							//o valid=validação do campo categoria
-	public ResponseEntity<Categoria> criar(@Valid @RequestBody Categoria categoria, HttpServletResponse response) { 
-		Categoria categoriaSalva = categoriaRepository.save(categoria);
+	public ResponseEntity<Pessoa> criar(@Valid @RequestBody Pessoa pessoa, HttpServletResponse response) { 
+		Pessoa pessoaSalva = pessoaRepository.save(pessoa);
 
 		URI uri = ServletUriComponentsBuilder //Classe do Spring para pegar a URI de response da chamada
 				.fromCurrentRequestUri().path("/{codigo}") //coloca o codigo na uri de response
-				.buildAndExpand(categoriaSalva.getCodigo()) //pega o codigo da "/categoria" cadastrada
+				.buildAndExpand(pessoaSalva.getCodigo()) //pega o codigo da "/categoria" cadastrada
 				.toUri(); //tipo toString.. etc
 		
 		response.setHeader("location", uri.toASCIIString()); //Aqui e adicionado o local do contexto
 		
-		return ResponseEntity.created(uri).body(categoriaSalva); //aqui retorna para o consumo da API o endereco da categoria salva
+		return ResponseEntity.created(uri).body(pessoaSalva); //aqui retorna para o consumo da API o endereco da categoria salva
 	}
 	
 	@GetMapping("/{codigo}")
-	public ResponseEntity<Categoria> buscarPelaCategoria (@PathVariable Long codigo) {
+	public ResponseEntity<Pessoa> buscarPelaPessoa (@PathVariable Long codigo) {
 		
-		if(categoriaRepository.findOne(codigo) != null) {
-			return ResponseEntity.ok(categoriaRepository.findOne(codigo));
+		if(pessoaRepository.findOne(codigo) != null) {
+			return ResponseEntity.ok(pessoaRepository.findOne(codigo));
 		}else {
 			return ResponseEntity.notFound().build();
 		}		
