@@ -19,33 +19,33 @@ import com.algaworks.alamoneyapi.model.Pessoa;
 import com.algaworks.alamoneyapi.repository.PessoaRepository;
 
 @RestController //Controlador JSON dispensa uso de notaçoes adicionais
-@RequestMapping("/pessoa") //faz o mapeamento da requisicao tipo meusite.com/categorias
+@RequestMapping("/pessoa") //faz o mapeamento da requisicao tipo meusite.com/pessoas
 public class PessoaResource {
 
-	@Autowired //injeta uma implementacao de "Categoria" da anotacao categoriaRepository nesta classe resource
+	@Autowired //injeta uma implementacao de "pessoas" da anotacao categoriaRepository nesta classe resource
 	private PessoaRepository pessoaRepository;
 	
-	@GetMapping //mapeamento do "get" para a "/categorias"
+	@GetMapping //mapeamento do "get" para a "/pessoa"
 	public List<Pessoa> listar() {
 		return pessoaRepository.findAll();
 	}
 	
-	@PostMapping 							//o valid=validação do campo categoria
+	@PostMapping 							//o valid=validação do campo pessoa
 	public ResponseEntity<Pessoa> criar(@Valid @RequestBody Pessoa pessoa, HttpServletResponse response) { 
 		Pessoa pessoaSalva = pessoaRepository.save(pessoa);
 
 		URI uri = ServletUriComponentsBuilder //Classe do Spring para pegar a URI de response da chamada
 				.fromCurrentRequestUri().path("/{codigo}") //coloca o codigo na uri de response
-				.buildAndExpand(pessoaSalva.getCodigo()) //pega o codigo da "/categoria" cadastrada
+				.buildAndExpand(pessoaSalva.getCodigo()) //pega o codigo da "/pessoa" cadastrada
 				.toUri(); //tipo toString.. etc
 		
 		response.setHeader("location", uri.toASCIIString()); //Aqui e adicionado o local do contexto
 		
-		return ResponseEntity.created(uri).body(pessoaSalva); //aqui retorna para o consumo da API o endereco da categoria salva
+		return ResponseEntity.created(uri).body(pessoaSalva); //aqui retorna para o consumo da API o endereco da pessoa salva
 	}
 	
-	@GetMapping("/{codigo}")
-	public ResponseEntity<Pessoa> buscarPelaPessoa (@PathVariable Long codigo) {
+	@GetMapping("/{codigo}") //mapea no endereco principal meusite.com/pessoa + este mapeamento, o primeiro @getmapping sempre vai ser
+	public ResponseEntity<Pessoa> buscarPelaPessoa (@PathVariable Long codigo) { //o principal no caso meusit.com/pessoa/ <--- este mapeamennto
 		
 		if(pessoaRepository.findOne(codigo) != null) {
 			return ResponseEntity.ok(pessoaRepository.findOne(codigo));
