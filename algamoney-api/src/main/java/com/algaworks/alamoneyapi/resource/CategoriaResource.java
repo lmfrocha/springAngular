@@ -18,12 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.algaworks.alamoneyapi.event.RecursoCriadoEvent;
 import com.algaworks.alamoneyapi.model.Categoria;
-import com.algaworks.alamoneyapi.model.Pessoa;
 import com.algaworks.alamoneyapi.repository.CategoriaRepository;
 
 @RestController //Controlador JSON dispensa uso de notaçoes adicionais
