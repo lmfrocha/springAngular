@@ -1,12 +1,13 @@
 package com.algaworks.alamoneyapi.resource;
 
-import java.net.URI;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import com.algaworks.alamoneyapi.event.RecursoCriadoEvent;
 import com.algaworks.alamoneyapi.model.Pessoa;
 import com.algaworks.alamoneyapi.repository.PessoaRepository;
 
@@ -30,28 +32,29 @@ public class PessoaResource {
 		return pessoaRepository.findAll();
 	}
 	
+	@Autowired
+	private ApplicationEventPublisher publisher;
+	
 	@PostMapping 							//o valid=validação do campo pessoa
 	public ResponseEntity<Pessoa> criar(@Valid @RequestBody Pessoa pessoa, HttpServletResponse response) { 
 		Pessoa pessoaSalva = pessoaRepository.save(pessoa);
-
-		URI uri = ServletUriComponentsBuilder //Classe do Spring para pegar a URI de response da chamada
-				.fromCurrentRequestUri().path("/{codigo}") //coloca o codigo na uri de response
-				.buildAndExpand(pessoaSalva.getCodigo()) //pega o codigo da "/pessoa" cadastrada
-				.toUri(); //tipo toString.. etc
-		
-		response.setHeader("location", uri.toASCIIString()); //Aqui e adicionado o local do contexto
-		
-		return ResponseEntity.created(uri).body(pessoaSalva); //aqui retorna para o consumo da API o endereco da pessoa salva
+		publisher.publishEvent(new RecursoCriadoEvent(this, response, pessoaSalva.getCodigo()));
+		return ResponseEntity.status(HttpStatus.CREATED).body(pessoaSalva); //aqui retorna para o consumo da API o endereco da pessoa salva
 	}
 	
 	@GetMapping("/{codigo}") //mapea no endereco principal meusite.com/pessoa + este mapeamento, o primeiro @getmapping sempre vai ser
 	public ResponseEntity<Pessoa> buscarPelaPessoa (@PathVariable Long codigo) { //o principal no caso meusit.com/pessoa/ <--- este mapeamennto
 		
-		if(pessoaRepository.findOne(codigo) != null) {
-			return ResponseEntity.ok(pessoaRepository.findOne(codigo));
-		}else {
-			return ResponseEntity.notFound().build();
-		}		
+//		Melhoria no código
+		Pessoa pessoa = pessoaRepository.findOne(codigo);
+		return pessoa != null ? ResponseEntity.ok(pessoa) : ResponseEntity.notFound().build();
+		
+//		Primeira versap do tratamento caso nao encontre a pessoa
+//		if(pessoaRepository.findOne(codigo) != null) {
+//			return ResponseEntity.ok(pessoaRepository.findOne(codigo));
+//		}else {
+//			return ResponseEntity.notFound().build();
+//		}		
 	}
 	
 	
