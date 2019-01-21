@@ -5,7 +5,6 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.algaworks.alamoneyapi.event.RecursoCriadoEvent;
 import com.algaworks.alamoneyapi.model.Pessoa;
 import com.algaworks.alamoneyapi.repository.PessoaRepository;
+import com.algaworks.alamoneyapi.service.PessoaService;
 
 @RestController //Controlador JSON dispensa uso de notaçoes adicionais
 @RequestMapping("/pessoa") //faz o mapeamento da requisicao tipo meusite.com/pessoas
@@ -32,7 +32,10 @@ public class PessoaResource {
 	@Autowired //injeta uma implementacao de "pessoas" da anotacao categoriaRepository nesta classe resource
 	private PessoaRepository pessoaRepository;
 	
-	@GetMapping //mapeamento do "get" para a "/pessoa"
+	@Autowired
+	private PessoaService pessoaService;
+	
+	@GetMapping //mapeamento do "get" para a "/pessoa" traz todo mundo
 	public List<Pessoa> listar() {
 		return pessoaRepository.findAll();
 	}
@@ -74,16 +77,18 @@ public class PessoaResource {
 	
 	@PutMapping("/{codigo}")
 	public ResponseEntity<Pessoa> atualizar(@PathVariable Long codigo, @RequestBody Pessoa pessoa){
-		Pessoa pessoaSalva = pessoaRepository.findOne(codigo);
-		if(pessoaSalva == null) {
-			throw new EmptyResultDataAccessException(1);
-		}
-		BeanUtils.copyProperties(pessoa, pessoaSalva, "codigo");
-		pessoaRepository.save(pessoaSalva);
+		
+		
+		Pessoa pessoaSalva = pessoaService.atualizar(codigo, pessoa);
 		return ResponseEntity.ok(pessoaSalva);
 		
 	}
 	
+	@PutMapping("/{codigo}/ativo")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void atualizarPropriedadeAtivo(@PathVariable Long codigo, @RequestBody Boolean ativo) {
+		pessoaService.atualizarPropriedadeAtivo(codigo, ativo);
+	}
 	
 	
 	
